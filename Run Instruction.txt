@@ -15,3 +15,13 @@ Steps-
 CUDA Check :
             nvcc --version
              sudo apt install nvidia-cuda-toolkit
+
+
+CUDA In colab :
+
+!nvcc --version
+!pip install git+https://github.com/afnan47/cuda.git
+!pip install git+https://github.com/afnan47/cuda.git
+%%writefile name.cu
+!nvcc name.cu -o name
+!./name
