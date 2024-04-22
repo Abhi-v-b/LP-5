@@ -1,0 +1,111 @@
+%%writefile add.cu
+
+#include <iostream>
+#include <cstdlib> // Include <cstdlib> for rand()
+#include <cuda_runtime.h> // Include CUDA runtime API functions
+#include <cuda.h> // Include CUDA functions
+
+using namespace std;
+
+_global_
+void add(int* A, int* B, int* C, int size)
+{
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    if (tid < size)
+    {
+        C[tid] = A[tid] + B[tid];
+    }
+}
+
+void initialize(int* vector, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        vector[i] = rand() % 10;
+    }
+}
+
+void print(int* vector, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        cout << vector[i] << " ";
+    }
+    cout << endl;
+}
+
+int main() {
+    int N = 4;
+    int* A, * B, * C;
+    int vectorSize = N;
+    size_t vectorBytes = vectorSize * sizeof(int);
+    // Allocate host memory
+    A = new int[vectorSize];
+    B = new int[vectorSize];
+    C = new int[vectorSize];
+    // Initialize host arrays
+    initialize(A, vectorSize);
+    initialize(B, vectorSize);
+    cout << "Vector A: ";
+    print(A, N);
+    cout << "Vector B: ";
+    print(B, N);
+    int* X, * Y, * Z;
+    // Allocate device memory
+    cudaMalloc(&X, vectorBytes);
+    cudaMalloc(&Y, vectorBytes);
+    cudaMalloc(&Z, vectorBytes);
+    // Check for CUDA memory allocation errors
+    if (X == nullptr || Y == nullptr || Z == nullptr) {
+        cerr << "CUDA memory allocation failed" << endl;
+        return 1;
+    }
+    // Copy data from host to device
+    cudaMemcpy(X, A, vectorBytes, cudaMemcpyHostToDevice);
+    cudaMemcpy(Y, B, vectorBytes, cudaMemcpyHostToDevice);
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (N + threadsPerBlock - 1) / threadsPerBlock;
+    // Create CUDA events for measuring execution time
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    // Record start event
+    cudaEventRecord(start);
+    // Launch kernel
+    add<<<blocksPerGrid, threadsPerBlock>>>(X, Y, Z, N);
+    // Record stop event
+    cudaEventRecord(stop);
+    // Synchronize events
+    cudaEventSynchronize(stop);
+    // Calculate elapsed time
+    float milliseconds = 0;
+    cudaEventElapsedTime(&milliseconds, start, stop);
+    cout << "Kernel execution time: " << milliseconds << " milliseconds" << endl;
+    // Check for kernel launch errors
+    cudaError_t kernelLaunchError = cudaGetLastError();
+    if (kernelLaunchError != cudaSuccess) {
+        cerr << "CUDA kernel launch failed: " << cudaGetErrorString(kernelLaunchError);
+        return 1;
+    }
+    // Copy result from device to host
+    cudaMemcpy(C, Z, vectorBytes, cudaMemcpyDeviceToHost);
+
+    // Check for CUDA memcpy errors
+    cudaError_t memcpyError = cudaGetLastError();
+    if (memcpyError != cudaSuccess)
+    {
+        cerr << "CUDA memcpy failed: " << cudaGetErrorString(memcpyError) << endl;
+        return 1;
+    }
+    cout << "Addition: ";
+    print(C, N);
+    // Free device memory
+    cudaFree(X);
+    cudaFree(Y);
+    cudaFree(Z);
+    // Free host memory
+    delete[] A;
+    delete[] B;
+    delete[] C;
+    return 0;
+}
