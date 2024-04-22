@@ -1,13 +1,11 @@
 %%writefile add.cu
-
 #include <iostream>
 #include <cstdlib> // Include <cstdlib> for rand()
 #include <cuda_runtime.h> // Include CUDA runtime API functions
-#include <cuda.h> // Include CUDA functions
 
 using namespace std;
 
-_global_
+__global__
 void add(int* A, int* B, int* C, int size)
 {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
@@ -109,3 +107,10 @@ int main() {
     delete[] C;
     return 0;
 }
+
+
+
+
+!nvcc add.cu -o add -Xcompiler -fopenmp
+
+!./add
