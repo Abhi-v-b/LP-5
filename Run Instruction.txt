@@ -15,7 +15,8 @@ Steps-
 CUDA Check :
             nvcc --version
              sudo apt install nvidia-cuda-toolkit
-
+                g++ file.c -fopenmp -o out
+                ./out
 
 CUDA In colab :
 
