@@ -90,3 +90,6 @@ int main() {
 
     return 0;
 }
+
+!nvcc bubblesort.cu -o bubble
+!./bubble
