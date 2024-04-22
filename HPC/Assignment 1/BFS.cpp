@@ -44,23 +44,6 @@ int main() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #INPUT:   
   # 1 --- 2
  # / \   / \
@@ -82,3 +65,88 @@ int main() {
 #5 6
 #OUTPUT :
 #0 1 4 2 3 5 6 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2nd method 
+#include <iostream>
+#include <queue>
+#include <vector>
+#include <ctime> // Include the ctime library for time measurement
+using namespace std;
+
+int main() {
+    int num_vertices, num_edges, source;
+    cin >> num_vertices >> num_edges >> source;
+
+    vector<vector<int>> adj_list(num_vertices + 1);
+    for (int i = 0; i < num_edges; i++) {
+        int u, v;
+        cin >> u >> v;
+        adj_list[u].push_back(v);
+        adj_list[v].push_back(u);
+    }
+
+    queue<int> q;
+    vector<bool> visited(num_vertices + 1, false);
+    q.push(source);
+    visited[source] = true;
+
+    // Start measuring time
+    clock_t start = clock();
+
+    while (!q.empty()) {
+        int curr_vertex = q.front();
+        q.pop();
+        cout << curr_vertex << " ";
+
+        for (int i = 0; i < adj_list[curr_vertex].size(); i++) {
+            int neighbour = adj_list[curr_vertex][i];
+            if (!visited[neighbour]) {
+                visited[neighbour] = true;
+                q.push(neighbour);
+            }
+        }
+    }
+
+    // Stop measuring time
+    clock_t end = clock();
+    double duration = double(end - start) / CLOCKS_PER_SEC;
+    cout << "\nExecution time: " << duration << " seconds" << endl;
+
+    return 0;
+}
+
+
+
+INPUT:
+
+7 8
+0
+0 1
+0 4
+1 2
+1 4
+2 3
+2 5
+3 6
+5 6
+OUTPUT:
+0 1 4 2 3 5 6 
+Execution time: 2.7e-05 seconds
+
+
+
+
