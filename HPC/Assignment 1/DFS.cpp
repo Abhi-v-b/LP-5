@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <stack>
+#include <ctime> // For time measurement
 using namespace std;
 
 const int MAXN = 1e5;
@@ -42,7 +43,12 @@ int main() {
 
     int start_node; // start node of DFS
     cin >> start_node;
+
+    // Measure execution time
+    clock_t begin = clock();
     vector<int> visited_nodes = dfs(start_node);
+    clock_t end = clock();
+    double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
 
     // Print visited nodes
     cout << "Visited nodes: ";
@@ -51,5 +57,35 @@ int main() {
     }
     cout << endl;
 
+    // Print execution time
+    cout << "Execution time: " << elapsed_secs << " seconds" << endl;
+
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+INPUT:
+Please enter nodes and edges: 6 6
+0 1
+0 2
+1 3
+2 4
+3 5
+4 5
+0
+
+OUTPUT:
+Visited nodes: 0 1 3 5 4 2 
+Execution time: 6e-06 seconds
