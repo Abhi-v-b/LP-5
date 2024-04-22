@@ -80,3 +80,18 @@ int main ()
   /* TERMINATE PROGRAM */
   return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+!nvcc matrix_mult.cu -o mat -Xcompiler -fopenmp
+!./mat
