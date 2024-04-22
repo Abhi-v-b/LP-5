@@ -1,0 +1,169 @@
+DFS : 
+
+%%writefile dfs.cu
+
+#include <iostream>
+#include <vector>
+#include <stack>
+#include <cuda_runtime.h>
+
+using namespace std;
+
+__global__ void dfs_kernel(int *adj_list, int *visited, int num_vertices, int source) {
+    int thread_id = threadIdx.x + blockIdx.x * blockDim.x;
+
+    if (thread_id == 0) {
+        int stack[1024]; // Assuming maximum stack size of 1024
+        int top = -1;
+
+        stack[++top] = source;
+        visited[source] = 1;
+
+        while (top >= 0) {
+            int curr_vertex = stack[top--];
+            printf("%d ", curr_vertex);
+
+            for (int i = 0; i < num_vertices; ++i) {
+                int neighbour = adj_list[curr_vertex * num_vertices + i];
+                if (neighbour && !visited[i]) {
+                    visited[i] = 1;
+                    stack[++top] = i;
+                }
+            }
+        }
+    }
+}
+
+
+
+int main() {
+    int num_vertices, num_edges, source;
+    cout << "Enter number of vertices: ";
+    cin >> num_vertices;
+    cout << "Enter number of edges: ";
+    cin >> num_edges;
+    cout << "Enter source node: ";
+    cin >> source;
+
+    // Input validation
+    if (source < 0 || source >= num_vertices) {
+        cout << "Invalid source node!" << endl;
+        return 1;
+    }
+
+    vector<int> adj_list(num_vertices * num_vertices, 0);
+    cout << "Enter the edges:" << endl;
+    for (int i = 0; i < num_edges; i++) {
+        int u, v;
+        cin >> u >> v;
+        // Input validation for edges
+        if (u < 0 || u >= num_vertices || v < 0 || v >= num_vertices) {
+            cout << "Invalid edge: " << u << " " << v << endl;
+            return 1;
+        }
+        adj_list[u * num_vertices + v] = 1;
+        adj_list[v * num_vertices + u] = 1;
+    }
+
+    int *d_adj_list, *d_visited;
+    cudaMalloc((void **)&d_adj_list, num_vertices * num_vertices * sizeof(int));
+    cudaMalloc((void **)&d_visited, num_vertices * sizeof(int));
+
+    cudaMemcpy(d_adj_list, &adj_list[0], num_vertices * num_vertices * sizeof(int), cudaMemcpyHostToDevice);
+
+    int *visited = new int[num_vertices];
+    for (int i = 0; i < num_vertices; i++) {
+        visited[i] = 0;
+    }
+
+    cudaMemcpy(d_visited, visited, num_vertices * sizeof(int), cudaMemcpyHostToDevice);
+
+    // CUDA event creation for measuring execution time
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start);
+
+    // Launch DFS kernel
+    dfs_kernel<<<1, 1>>>(d_adj_list, d_visited, num_vertices, source);
+
+    // Record and calculate execution time
+    cudaEventRecord(stop);
+    cudaEventSynchronize(stop);
+    float milliseconds = 0;
+    cudaEventElapsedTime(&milliseconds, start, stop);
+    cout << endl << "Execution Time: " << milliseconds << " ms" << endl;
+
+    // Cleanup
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
+    cudaFree(d_adj_list);
+    cudaFree(d_visited);
+    delete[] visited;
+
+    return 0;
+}
+
+
+
+
+
+BFS:
+
+%%writefile bfs.cu
+
+ #include <iostream>
+ #include <queue>
+ #include <vector>
+ #include <omp.h>
+ using namespace std;
+
+ int main()
+ {
+ int num_vertices, num_edges, source;
+ cout << "Enter number of vertices, edges, and source node: ";
+ cin >> num_vertices >> num_edges >> source;
+ // Input validation
+ if (source < 1 || source > num_vertices) {
+ cout << "Invalid source node!" << endl;
+ return 1;
+ }
+
+vector<vector<int>> adj_list(num_vertices + 1);
+  for (int i = 0; i < num_edges; i++)
+  {
+        int u, v;
+        cin >> u >> v;
+        // Input validation for edges
+        if (u < 1 || u > num_vertices || v < 1 || v > num_vertices)
+        {
+            cout << "Invalid edge: " << u << " " << v << endl;
+            return 1;
+        }
+        adj_list[u].push_back(v);
+        adj_list[v].push_back(u);
+  }
+
+queue<int> q;
+vector<bool> visited(num_vertices + 1, false);
+q.push(source);
+visited[source] = true;
+while (!q.empty())
+{
+        int curr_vertex = q.front();
+        q.pop();
+        cout << curr_vertex << " ";
+        // Sequential loop for neighbors
+        for (int i = 0; i < adj_list[curr_vertex].size(); i++)
+        {
+            int neighbour = adj_list[curr_vertex][i];
+            if (!visited[neighbour])
+            {
+                visited[neighbour] = true;
+                q.push(neighbour);
+            }
+        }
+    }
+    cout << endl;
+    return 0;
+}
