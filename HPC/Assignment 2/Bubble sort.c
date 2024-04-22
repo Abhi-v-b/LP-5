@@ -74,3 +74,43 @@ int main() {
     return 0;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+OUTPUT:
+Enter the number of elements: 9
+Enter 9 elements:
+5
+2
+9
+1
+7
+6
+8
+3
+4
+Unsorted array: 
+5 2 9 1 7 6 8 3 4 
+Sorted array (sequential): 
+1 2 3 4 5 6 7 8 9 
+Time taken (sequential): 0.000001 seconds
+Sorted array (parallel): 
+1 2 3 4 5 6 7 8 9 
+Time taken (parallel): 0.000218 seconds
