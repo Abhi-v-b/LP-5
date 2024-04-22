@@ -8,7 +8,7 @@ Steps-
           Cat > filename.cpp
           Write code in terminal and press ctrl D to save the code
         To compile file use command-
-          'g++ -o filename –fopenmp filename.cpp' or 'gcc file.c -lgomp -pthread -o out'
+          'g++ -o filename -fopenmp filename.cpp' or 'gcc file.c -lgomp -pthread -o out'
         Run file using command-
           ./filename
 
