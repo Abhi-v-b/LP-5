@@ -1,0 +1,84 @@
+%%writefile merge.cu
+#include <iostream>
+#include <chrono>
+
+// CUDA kernel for Bubble Sort
+__global__ void bubble_sort(int* d_arr, int size) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x; // Thread index
+    for (int i = 0; i < size - 1; i++) {
+        int j = idx + i; // Offset to perform the bubble sort step
+        if (j < size - 1 && d_arr[j] > d_arr[j + 1]) { // Swap if out of order
+            int temp = d_arr[j];
+            d_arr[j] = d_arr[j + 1];
+            d_arr[j + 1] = temp;
+        }
+        __syncthreads(); // Synchronize threads within block
+    }
+}
+
+// Function for Bubble Sort on CPU
+void bubble_sort_cpu(int* arr, int size) {
+    for (int i = 0; i < size - 1; i++) {
+        for (int j = 0; j < size - 1 - i; j++) {
+            if (arr[j] > arr[j + 1]) { // Swap if out of order
+                int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
+    }
+}
+
+int main() {
+    int size;
+    std::cout << "Enter the size of the array: ";
+    std::cin >> size;
+
+    // Allocate memory for the array
+    int* h_arr = new int[size];
+
+    // Input array elements from the user
+    std::cout << "Enter " << size << " elements of the array: ";
+    for (int i = 0; i < size; i++) {
+        std::cin >> h_arr[i];
+    }
+
+    // Bubble Sort on CPU
+    auto start_cpu = std::chrono::high_resolution_clock::now();
+    bubble_sort_cpu(h_arr, size);
+    auto end_cpu = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration_cpu = end_cpu - start_cpu;
+    std::cout << "Sequential Bubble Sort took " << duration_cpu.count() << " seconds\n";
+
+    // Copying data to the device for parallel Bubble Sort
+    int* d_arr;
+    cudaMalloc(&d_arr, size * sizeof(int));
+    cudaMemcpy(d_arr, h_arr, size * sizeof(int), cudaMemcpyHostToDevice);
+
+    // Bubble Sort on GPU
+    auto start_gpu = std::chrono::high_resolution_clock::now();
+    int blockSize = 256; // Threads per block
+    int gridSize = (size + blockSize - 1) / blockSize; // Blocks
+    bubble_sort<<<gridSize, blockSize>>>(d_arr, size);
+    cudaDeviceSynchronize(); // Wait for GPU to finish
+    auto end_gpu = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration_gpu = end_gpu - start_gpu;
+    std::cout << "Parallel Bubble Sort took " << duration_gpu.count() << " seconds\n";
+
+    // Copying sorted data back to host
+    cudaMemcpy(h_arr, d_arr, size * sizeof(int), cudaMemcpyDeviceToHost);
+
+    // Display sorted array
+    std::cout << "Sorted Array: ";
+    for (int i = 0; i < size; i++) {
+        std::cout << h_arr[i] << " ";
+    }
+    std::cout << std::endl;
+
+    // Free device memory
+    cudaFree(d_arr);
+    // Free host memory
+    delete[] h_arr;
+
+    return 0;
+}
