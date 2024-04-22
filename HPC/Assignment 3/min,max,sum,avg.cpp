@@ -88,13 +88,19 @@ int main() {
 
 
 
+OUTPUT:
+Enter the number of elements: 9 
+Enter 9 elements: 5 2 9 1 7 6 8 3 4
+Minimum value: 1
+Time taken for min_reduction: 0.000178235 seconds
+Maximum value: 9
+Time taken for max_reduction: 1.802e-06 seconds
+Sum: 45
+Time taken for sum_reduction: 1.239e-06 seconds
+Average: 5
+Time taken for average_reduction: 1.202e-06 seconds
 
 
-#Enter the number of elements: 9
-#Enter 9 elements: 5 2 9 1 7 6 8 3 4
-#Minimum value: 1
-#Maximum value: 9
-#Sum: 45
-#Average: 5
+
 
 
