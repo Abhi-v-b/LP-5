@@ -84,3 +84,37 @@ int main() {
     return 0;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+OUTPUT:
+Enter the number of elements in the array: 9
+Enter the elements of the array:
+5
+2
+9
+1
+7
+6
+8
+3
+4
+Sequential merge sort time: 1.0822e-05 seconds
+Parallel merge sort time: 0.000220803 seconds
+Sorted array:
+1 2 3 4 5 6 7 8 9 
